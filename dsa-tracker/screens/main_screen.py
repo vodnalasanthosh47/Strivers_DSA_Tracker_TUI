@@ -73,7 +73,7 @@ class QuestionBrowser(Widget, can_focus=True):
         topic_qs: dict[str, list[dict]] = {}
         for q in self.all_questions:
             if self._revision_only and \
-               self.progress.get(q["id"], {}).get("status") != "revision":
+               not self.progress.get(q["id"], {}).get("revision"):
                 continue
             if self._filter_diff != "All" and q["difficulty"] != self._filter_diff:
                 continue
@@ -149,12 +149,14 @@ class QuestionBrowser(Widget, can_focus=True):
         return t
 
     def _question_line(self, q: dict, hl: bool) -> Text:
-        status = self.progress.get(q["id"], {}).get("status", "todo")
+        entry = self.progress.get(q["id"], {})
+        status = entry.get("status", "todo")
+        is_rev = entry.get("revision", False)
+        
         cb, cb_style = {
             "done":     ("[✓]", "#3fb950"),
-            "revision": ("[~]", "#d29922"),
         }.get(status, ("[ ]", "#484f58"))
-        rev         = "🟠" if status == "revision" else "  "
+        rev         = "🟠" if is_rev else "  "
         diff_color  = DIFF_COLORS.get(q["difficulty"], "#c9d1d9")
         diff_badge  = f"[{q['difficulty'][:3].upper()}]"
         plat_label, plat_color = PLAT_BADGES.get(
@@ -163,12 +165,12 @@ class QuestionBrowser(Widget, can_focus=True):
         if len(title) > 37:
             title = title[:36] + "…"
         bg          = " on #1c2128" if hl else ""
-        title_color = {"done": "#3fb950", "revision": "#d29922"}.get(status, "#c9d1d9")
+        title_color = "#3fb950" if status == "done" else ("#d29922" if is_rev else "#c9d1d9")
 
         t = Text(no_wrap=True)
         t.append("  ", style=bg)
         t.append(cb,  style=f"{cb_style}{bg}")
-        t.append(f" {rev} ", style=f"{'#d29922' if status=='revision' else '#161b22'}{bg}")
+        t.append(f" {rev} ", style=f"{'#d29922' if is_rev else '#161b22'}{bg}")
         t.append(f"{title:<85}", style=f"{title_color}{bg}")
         t.append(" ", style=bg)
         t.append(diff_badge, style=f"{diff_color}{bg}")
@@ -231,6 +233,7 @@ class QuestionBrowser(Widget, can_focus=True):
         new   = "done" if entry.get("status", "todo") != "done" else "todo"
         entry.update({"status": new, "last_updated": date.today().isoformat()})
         entry.setdefault("note", "")
+        entry.setdefault("revision", False)
         self.progress[qid] = entry
         save_progress(self.progress)
         update_streak_for_today(self.progress)

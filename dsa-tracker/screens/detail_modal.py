@@ -31,6 +31,7 @@ class DetailModal(ModalScreen):
         self.question = question
         self.progress = progress  # shared mutable dict
         self._current_status = progress.get(question["id"], {}).get("status", "todo")
+        self._current_revision = progress.get(question["id"], {}).get("revision", False)
         self._note = progress.get(question["id"], {}).get("note", "")
 
     def compose(self) -> ComposeResult:
@@ -85,7 +86,7 @@ class DetailModal(ModalScreen):
         s = self._current_status
         todo_cls = "modal-status-btn--active-todo" if s == "todo" else "modal-status-btn"
         done_cls = "modal-status-btn--active-done" if s == "done" else "modal-status-btn"
-        rev_cls = "modal-status-btn--active-revision" if s == "revision" else "modal-status-btn"
+        rev_cls = "modal-status-btn--active-revision" if self._current_revision else "modal-status-btn"
         self.query_one("#btn-todo", Button).set_classes(todo_cls)
         self.query_one("#btn-done", Button).set_classes(done_cls)
         self.query_one("#btn-revision", Button).set_classes(rev_cls)
@@ -102,7 +103,7 @@ class DetailModal(ModalScreen):
 
     @on(Button.Pressed, "#btn-revision")
     def press_revision(self) -> None:
-        self._current_status = "revision"
+        self._current_revision = not self._current_revision
         self._update_status_buttons()
 
     def action_set_todo(self) -> None:
@@ -114,7 +115,7 @@ class DetailModal(ModalScreen):
         self._update_status_buttons()
 
     def action_set_revision(self) -> None:
-        self._current_status = "revision"
+        self._current_revision = not self._current_revision
         self._update_status_buttons()
 
     def action_open_link(self) -> None:
@@ -125,6 +126,7 @@ class DetailModal(ModalScreen):
         note_text = self.query_one("#modal-notes", TextArea).text
         entry = self.progress.get(qid, {})
         entry["status"] = self._current_status
+        entry["revision"] = self._current_revision
         entry["note"] = note_text
         if self._current_status == "done":
             entry["last_updated"] = date.today().isoformat()

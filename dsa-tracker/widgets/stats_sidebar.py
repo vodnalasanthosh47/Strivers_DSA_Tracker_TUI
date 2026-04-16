@@ -55,10 +55,10 @@ class StatsSidebar(Widget):
             qid for qid, v in self.progress.items() if v.get("status") == "done"
         }
         revision_ids = {
-            qid for qid, v in self.progress.items() if v.get("status") == "revision"
+            qid for qid, v in self.progress.items() if v.get("revision") is True
         }
-        todo_count = total - len(done_ids) - len(revision_ids)
         done_count = len(done_ids)
+        todo_count = total - done_count
         rev_count = len(revision_ids)
 
         pct = (done_count / total * 100) if total else 0
