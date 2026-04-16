@@ -27,20 +27,20 @@ Footer {
 }
 
 #left-panel {
-    width: 65%;
+    width: 75%;
     border-right: solid #30363d;
     layout: vertical;
 }
 
 #right-panel {
-    width: 35%;
+    width: 25%;
     layout: vertical;
     background: #0d1117;
 }
 
 /* ── Search bar ──────────────────────────────────────────── */
 #search-container {
-    height: 3;
+    height: 4;
     background: #161b22;
     border: solid #30363d;
     padding: 0 1;
@@ -67,7 +67,7 @@ Footer {
 
 /* ── Difficulty tabs ─────────────────────────────────────── */
 #diff-tabs {
-    height: 3;
+    height: 4;
     background: #161b22;
     layout: horizontal;
     align: left middle;
@@ -81,8 +81,8 @@ Footer {
     border: solid #30363d;
     padding: 0 2;
     margin: 0 1;
-    height: 1;
-    min-width: 10;
+    height: 3;
+    min-width: 25;
 }
 
 .diff-tab-active {
@@ -91,9 +91,9 @@ Footer {
     border: solid #58a6ff;
     padding: 0 2;
     margin: 0 1;
-    height: 1;
-    min-width: 10;
-    text-style: bold;
+    height: 3;
+    min-width: 25;
+    text-style: dim;
 }
 
 /* ── Question browser (virtual single widget) ─────────────── */
@@ -247,7 +247,7 @@ DetailModal {
 
 #modal-status-row {
     layout: horizontal;
-    height: 3;
+    height: 5;
     margin-bottom: 1;
     align: left middle;
 }
@@ -258,7 +258,7 @@ DetailModal {
     border: solid #30363d;
     padding: 0 2;
     margin-right: 1;
-    height: 1;
+    height: 3;
 }
 
 .modal-status-btn--active-todo {
@@ -267,7 +267,7 @@ DetailModal {
     border: solid #8b949e;
     padding: 0 2;
     margin-right: 1;
-    height: 1;
+    height: 3;
 }
 
 .modal-status-btn--active-done {
@@ -276,7 +276,7 @@ DetailModal {
     border: solid #3fb950;
     padding: 0 2;
     margin-right: 1;
-    height: 1;
+    height: 3;
     text-style: bold;
 }
 
@@ -286,7 +286,7 @@ DetailModal {
     border: solid #d29922;
     padding: 0 2;
     margin-right: 1;
-    height: 1;
+    height: 3;
     text-style: bold;
 }
 

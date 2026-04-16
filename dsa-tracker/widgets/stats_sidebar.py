@@ -91,7 +91,7 @@ class StatsSidebar(Widget):
 
         lines = [
             f"[bold #58a6ff]┌─ STRIVER'S A2Z DSA SHEET ─┐[/]",
-            f"[#484f58]  Keyboard-first progress tracker [/]",
+            f"[#484f58]  Keyboard-first progress\n[#484f58]  tracker [/]",
             "",
             f"[bold #8b949e]── DAILY TARGET ({today_str}) ──[/]",
             f"  [#c9d1d9]{daily_bar}[/] [bold]{today_count}[/][#484f58]/{daily_target}[/]",

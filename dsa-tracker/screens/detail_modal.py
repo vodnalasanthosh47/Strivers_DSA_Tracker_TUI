@@ -68,9 +68,9 @@ class DetailModal(ModalScreen):
             )
             yield Static("[#8b949e]Status:[/]", classes="stats-section-title")
             with Horizontal(id="modal-status-row"):
-                yield Button("[ Todo ]", id="btn-todo", classes="modal-status-btn")
-                yield Button("[✓ Done ]", id="btn-done", classes="modal-status-btn")
-                yield Button("[🔖 Revision]", id="btn-revision", classes="modal-status-btn")
+                yield Button("⚪ Todo (t)", id="btn-todo", classes="modal-status-btn")
+                yield Button("🟢 Done (d)", id="btn-done", classes="modal-status-btn")
+                yield Button("🟠 Revision (r)", id="btn-revision", classes="modal-status-btn")
             yield Static("[#8b949e]Notes:[/]", id="modal-notes-label")
             yield TextArea(self._note, id="modal-notes")
             yield Static(

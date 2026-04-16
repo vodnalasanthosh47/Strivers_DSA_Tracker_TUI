@@ -60,8 +60,10 @@ class QuestionBrowser(Widget, can_focus=True):
         self._filter_search = ""
         self._cursor        = 0
         self._expanded: dict[str, bool] = {
-            q["topic"]: True for q in questions
+            q["topic"]: False for q in questions
         }
+        self._before_search_expanded = self._expanded.copy()
+        self.search_mode = False
         self._topics_order  = get_topics_ordered(questions)
         self._items: list[tuple] = []
         self._build_items()
@@ -80,6 +82,16 @@ class QuestionBrowser(Widget, can_focus=True):
                 continue
             topic_qs.setdefault(q["topic"], []).append(q)
 
+        if self._filter_search != "" and not self.search_mode:
+            # first time entering into search mode
+            self.search_mode = True
+            self._before_search_expanded = self._expanded.copy()
+            self._expanded = {q["topic"]: True for q in self.all_questions}
+        elif not self._filter_search != "" and self.search_mode:
+            # first time exiting from search mode
+            self._expanded = self._before_search_expanded.copy()
+            self.search_mode = False
+        
         self._items = []
         for t in self._topics_order:
             qs = topic_qs.get(t)
@@ -130,8 +142,8 @@ class QuestionBrowser(Widget, can_focus=True):
 
         t = Text(no_wrap=True)
         t.append(f" {chevron} ", style=f"#484f58{bg}")
-        t.append(f"{topic.upper():<25}", style=f"bold #58a6ff{bg}")
-        t.append(f"{done}/{total}  ", style=f"#484f58{bg}")
+        t.append(f"{topic.upper():<83}", style=f"bold #58a6ff{bg}")
+        t.append(f"{done:>2}/{total:<2}  ", style=f"#484f58{bg}")
         t.append(bar, style=f"#3fb950{bg}")
         t.append(f" {pct}", style=f"#8b949e{bg}")
         return t
@@ -142,7 +154,7 @@ class QuestionBrowser(Widget, can_focus=True):
             "done":     ("[✓]", "#3fb950"),
             "revision": ("[~]", "#d29922"),
         }.get(status, ("[ ]", "#484f58"))
-        rev         = "🔖" if status == "revision" else "  "
+        rev         = "🟠" if status == "revision" else "  "
         diff_color  = DIFF_COLORS.get(q["difficulty"], "#c9d1d9")
         diff_badge  = f"[{q['difficulty'][:3].upper()}]"
         plat_label, plat_color = PLAT_BADGES.get(
@@ -157,7 +169,7 @@ class QuestionBrowser(Widget, can_focus=True):
         t.append("  ", style=bg)
         t.append(cb,  style=f"{cb_style}{bg}")
         t.append(f" {rev} ", style=f"{'#d29922' if status=='revision' else '#161b22'}{bg}")
-        t.append(f"{title:<37}", style=f"{title_color}{bg}")
+        t.append(f"{title:<85}", style=f"{title_color}{bg}")
         t.append(" ", style=bg)
         t.append(diff_badge, style=f"{diff_color}{bg}")
         t.append(" ", style=bg)
@@ -253,15 +265,16 @@ class MainScreen(Screen):
     """Main split-panel screen."""
 
     BINDINGS = [
-        Binding("slash",          "focus_search",          "Search",   show=False),
-        Binding("escape",         "clear_search",          "Clear",    show=False),
-        Binding("f2",             "toggle_revision_view",  "Revision", show=False),
-        Binding("r",              "toggle_revision_view",  "Revision", show=False),
-        Binding("0",              "filter_all",            "All",      show=False),
-        Binding("1",              "filter_easy",           "Easy",     show=False),
-        Binding("2",              "filter_medium",         "Medium",   show=False),
-        Binding("3",              "filter_hard",           "Hard",     show=False),
-        Binding("question_mark",  "show_help",             "Help",     show=False),
+        Binding("slash",          "focus_search",          "Search",          show=False),
+        Binding("escape",         "clear_search",          "Clear",           show=False),
+        Binding("f2",             "toggle_revision_view",  "Revision",        show=False),
+        Binding("r",              "toggle_revision_view",  "Revision",        show=False),
+        Binding("0",              "filter_all",            "All",             show=False),
+        Binding("1",              "filter_easy",           "Easy",            show=False),
+        Binding("2",              "filter_medium",         "Medium",          show=False),
+        Binding("3",              "filter_hard",           "Hard",            show=False),
+        Binding("question_mark",  "show_help",             "Help",            show=False),
+        Binding("o",              "open_link",             "Open in browser", show=False),
     ]
 
     def __init__(self, questions: list[dict], progress: dict,
@@ -278,10 +291,10 @@ class MainScreen(Screen):
                     yield Static("🔍 ", id="search-label")
                     yield Input(placeholder="Search questions…", id="search-input")
                 with Horizontal(id="diff-tabs"):
-                    yield Button("[All]",    id="tab-all",    classes="diff-tab-active")
-                    yield Button("[Easy]",   id="tab-easy",   classes="diff-tab")
-                    yield Button("[Medium]", id="tab-medium", classes="diff-tab")
-                    yield Button("[Hard]",   id="tab-hard",   classes="diff-tab")
+                    yield Button("All",    id="tab-all",    classes="diff-tab-active")
+                    yield Button("Easy",   id="tab-easy",   classes="diff-tab")
+                    yield Button("Medium", id="tab-medium", classes="diff-tab")
+                    yield Button("Hard",   id="tab-hard",   classes="diff-tab")
                 yield QuestionBrowser(
                     self.questions, self.progress,
                     revision_only=self.revision_only,
@@ -354,6 +367,7 @@ class MainScreen(Screen):
     def action_show_help(self) -> None:
         from screens.help_overlay import HelpOverlay
         self.app.push_screen(HelpOverlay())
+
 
     # ── Helpers ───────────────────────────────────────────────────
     def _refresh_stats(self) -> None:
