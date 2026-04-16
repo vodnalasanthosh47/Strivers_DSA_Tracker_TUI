@@ -34,10 +34,10 @@ class QuestionBrowser(Widget, can_focus=True):
     QuestionBrowser {
         height: 1fr;
         background: #0d1117;
-        overflow-y: scroll;
-        scrollbar-size-vertical: 1;
     }
     QuestionBrowser:focus { border: none; }
+    #left-panel  { height: 1fr; }
+    #right-panel { height: 1fr; }
     """
 
     class StatusToggled(Message):
@@ -59,6 +59,7 @@ class QuestionBrowser(Widget, can_focus=True):
         self._filter_diff   = "All"
         self._filter_search = ""
         self._cursor        = 0
+        self._viewport_top  = 0   # index of first visible row
         self._expanded: dict[str, bool] = {
             q["topic"]: False for q in questions
         }
@@ -105,8 +106,20 @@ class QuestionBrowser(Widget, can_focus=True):
         self._cursor = min(self._cursor, max(0, len(self._items) - 1))
 
     # ── Rendering ─────────────────────────────────────────────────
+    @property
+    def _viewport_height(self) -> int:
+        """Height of the visible area in rows — always accurate."""
+        h = self.size.height
+        # Fallback if CSS layout hasn't constrained us yet: estimate from
+        # terminal height minus header(1) + footer(1) + search(4) + tabs(4).
+        if h <= 1:
+            h = max(5, self.app.size.height - 12)
+        return h
+
     def get_content_height(self, container_size, viewport_size, width: int) -> int:
-        return max(len(self._items), 1)
+        # Return exactly the viewport height — we manage our own viewport,
+        # so Textual never needs to add its own scrollbar.
+        return self._viewport_height
 
     def render(self):
         if not self._items:
@@ -114,13 +127,35 @@ class QuestionBrowser(Widget, can_focus=True):
             t.append("\n  No questions found. Try adjusting filters.", style="#484f58")
             return t
 
+        height  = self._viewport_height
+        total   = len(self._items)
+        start   = self._viewport_top
+        end     = min(total, start + height)
+        visible = self._items[start:end]
+
+        # ── Build scrollbar ───────────────────────────────────────
+        bar_chars = [" "] * height
+        if total > height:
+            thumb_size = max(1, height * height // total)
+            max_top    = total - height
+            thumb_top  = round(self._viewport_top / max_top * (height - thumb_size))
+            for i in range(thumb_top, min(height, thumb_top + thumb_size)):
+                bar_chars[i] = "█"
+
+        # ── Render visible rows ───────────────────────────────────
         lines: list[Text] = []
-        for i, item in enumerate(self._items):
-            hl = (i == self._cursor)
+        for row_i, item in enumerate(visible):
+            actual_idx = start + row_i
+            hl = (actual_idx == self._cursor)
             if item[0] == "topic":
-                lines.append(self._topic_line(item[1], hl))
+                row = self._topic_line(item[1], hl)
             else:
-                lines.append(self._question_line(item[1], hl))
+                row = self._question_line(item[1], hl)
+            # Append scrollbar glyph
+            sb_char = bar_chars[row_i] if total > height else " "
+            sb_style = "#484f58" if sb_char == "█" else ""
+            row.append(f" {sb_char}", style=sb_style)
+            lines.append(row)
 
         result = Text()
         for i, line in enumerate(lines):
@@ -142,10 +177,10 @@ class QuestionBrowser(Widget, can_focus=True):
 
         t = Text(no_wrap=True)
         t.append(f" {chevron} ", style=f"#484f58{bg}")
-        t.append(f"{topic.upper():<83}", style=f"bold #58a6ff{bg}")
+        t.append(f"{topic.upper():<80}", style=f"bold #58a6ff{bg}")
         t.append(f"{done:>2}/{total:<2}  ", style=f"#484f58{bg}")
         t.append(bar, style=f"#3fb950{bg}")
-        t.append(f" {pct}", style=f"#8b949e{bg}")
+        t.append(f" {pct:>4}", style=f"#8b949e{bg}")
         return t
 
     def _question_line(self, q: dict, hl: bool) -> Text:
@@ -171,7 +206,7 @@ class QuestionBrowser(Widget, can_focus=True):
         t.append("  ", style=bg)
         t.append(cb,  style=f"{cb_style}{bg}")
         t.append(f" {rev} ", style=f"{'#d29922' if is_rev else '#161b22'}{bg}")
-        t.append(f"{title:<85}", style=f"{title_color}{bg}")
+        t.append(f"{title:<83}", style=f"{title_color}{bg}")
         t.append(" ", style=bg)
         t.append(diff_badge, style=f"{diff_color}{bg}")
         t.append(" ", style=bg)
@@ -201,7 +236,15 @@ class QuestionBrowser(Widget, can_focus=True):
             event.stop()
 
     def _scroll_cursor(self) -> None:
-        self.scroll_to(y=max(0, self._cursor - 5), animate=False)
+        """Update _viewport_top so the cursor is always within the visible window."""
+        h = self._viewport_height
+        if self._cursor < self._viewport_top:
+            self._viewport_top = self._cursor
+        elif self._cursor >= self._viewport_top + h:
+            self._viewport_top = self._cursor - h + 1
+        # Clamp
+        total = len(self._items)
+        self._viewport_top = max(0, min(self._viewport_top, max(0, total - h)))
 
     def _handle_space(self) -> None:
         if not self._items:
