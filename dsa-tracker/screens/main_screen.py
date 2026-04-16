@@ -58,6 +58,7 @@ class QuestionBrowser(Widget, can_focus=True):
         self._revision_only = revision_only
         self._filter_diff   = "All"
         self._filter_search = ""
+        self._todo_only     = False
         self._cursor        = 0
         self._viewport_top  = 0   # index of first visible row
         self._expanded: dict[str, bool] = {
@@ -75,6 +76,9 @@ class QuestionBrowser(Widget, can_focus=True):
         for q in self.all_questions:
             if self._revision_only and \
                not self.progress.get(q["id"], {}).get("revision"):
+                continue
+            if self._todo_only and \
+               self.progress.get(q["id"], {}).get("status") == "done":
                 continue
             if self._filter_diff != "All" and q["difficulty"] != self._filter_diff:
                 continue
@@ -286,11 +290,22 @@ class QuestionBrowser(Widget, can_focus=True):
     # ── Public API for MainScreen ─────────────────────────────────
     def set_diff_filter(self, diff: str) -> None:
         self._filter_diff = diff
+        self._cursor = 0
+        self._viewport_top = 0
         self._build_items()
         self.refresh()
 
     def set_search_filter(self, search: str) -> None:
         self._filter_search = search.lower()
+        self._cursor = 0
+        self._viewport_top = 0
+        self._build_items()
+        self.refresh()
+
+    def set_todo_filter(self, todo_only: bool) -> None:
+        self._todo_only = todo_only
+        self._cursor = 0
+        self._viewport_top = 0
         self._build_items()
         self.refresh()
 
@@ -316,11 +331,12 @@ class MainScreen(Screen):
         Binding("f2",             "toggle_revision_view",  "Revision",        show=False),
         Binding("r",              "toggle_revision_view",  "Revision",        show=False),
         Binding("0",              "filter_all",            "All",             show=False),
+        Binding("`",              "filter_all",            "All",             show=False),
         Binding("1",              "filter_easy",           "Easy",            show=False),
         Binding("2",              "filter_medium",         "Medium",          show=False),
         Binding("3",              "filter_hard",           "Hard",            show=False),
+        Binding("4",              "filter_todo",           "Todo",            show=False),
         Binding("question_mark",  "show_help",             "Help",            show=False),
-        Binding("o",              "open_link",             "Open in browser", show=False),
     ]
 
     def __init__(self, questions: list[dict], progress: dict,
@@ -341,6 +357,7 @@ class MainScreen(Screen):
                     yield Button("Easy",   id="tab-easy",   classes="diff-tab")
                     yield Button("Medium", id="tab-medium", classes="diff-tab")
                     yield Button("Hard",   id="tab-hard",   classes="diff-tab")
+                    yield Button("Todo",   id="tab-todo",   classes="diff-tab")
                 yield QuestionBrowser(
                     self.questions, self.progress,
                     revision_only=self.revision_only,
@@ -366,10 +383,12 @@ class MainScreen(Screen):
     def tab_medium(self) -> None: self._set_diff("Medium")
     @on(Button.Pressed, "#tab-hard")
     def tab_hard(self)   -> None: self._set_diff("Hard")
+    @on(Button.Pressed, "#tab-todo")
+    def tab_todo(self)   -> None: self._toggle_todo()
 
     def _set_diff(self, diff: str) -> None:
-        for tid, d in [("tab-all","All"),("tab-easy","Easy"),
-                       ("tab-medium","Medium"),("tab-hard","Hard")]:
+        all_tab_ids = [("tab-all","All"),("tab-easy","Easy"),("tab-medium","Medium"),("tab-hard","Hard")]
+        for tid, d in all_tab_ids:
             try:
                 self.query_one(f"#{tid}", Button).set_classes(
                     "diff-tab-active" if diff == d else "diff-tab")
@@ -377,6 +396,17 @@ class MainScreen(Screen):
                 pass
         self.query_one("#question-browser", QuestionBrowser).set_diff_filter(diff)
         self.query_one("#question-browser", QuestionBrowser).focus()
+
+    def _toggle_todo(self) -> None:
+        browser = self.query_one("#question-browser", QuestionBrowser)
+        new_state = not browser._todo_only
+        browser.set_todo_filter(new_state)
+        try:
+            self.query_one("#tab-todo", Button).set_classes(
+                "diff-tab-active" if new_state else "diff-tab")
+        except Exception:
+            pass
+        browser.focus()
 
     # ── Messages from QuestionBrowser ─────────────────────────────
     def on_question_browser_status_toggled(
@@ -404,6 +434,7 @@ class MainScreen(Screen):
     def action_filter_easy(self)   -> None: self._set_diff("Easy")
     def action_filter_medium(self) -> None: self._set_diff("Medium")
     def action_filter_hard(self)   -> None: self._set_diff("Hard")
+    def action_filter_todo(self)   -> None: self._toggle_todo()
 
     def action_toggle_revision_view(self) -> None:
         self.app.push_screen(

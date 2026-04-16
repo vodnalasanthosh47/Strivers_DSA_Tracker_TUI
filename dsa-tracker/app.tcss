@@ -82,7 +82,7 @@ Footer {
     padding: 0 2;
     margin: 0 1;
     height: 3;
-    min-width: 25;
+    min-width: 20;
 }
 
 .diff-tab-active {
@@ -92,7 +92,7 @@ Footer {
     padding: 0 2;
     margin: 0 1;
     height: 3;
-    min-width: 25;
+    min-width: 20;
     text-style: dim;
 }
 
