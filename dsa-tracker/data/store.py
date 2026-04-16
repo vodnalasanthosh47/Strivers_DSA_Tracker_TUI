@@ -6,13 +6,13 @@ import os
 from datetime import date
 from pathlib import Path
 
-DATA_DIR = Path.home() / ".dsa_tracker"
+DATA_DIR = Path(__file__).parent / "data_files"
 PROGRESS_FILE = DATA_DIR / "progress.json"
 STREAKS_FILE = DATA_DIR / "streaks.json"
 
 
 def ensure_data_dir() -> None:
-    """Create ~/.dsa_tracker/ and empty progress.json on first run."""
+    """Create ~/data_files/ and empty progress.json on first run."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     if not PROGRESS_FILE.exists():
         _write_json(PROGRESS_FILE, {})
