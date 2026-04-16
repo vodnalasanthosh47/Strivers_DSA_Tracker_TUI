@@ -1,1 +1,25 @@
-data/data_files/*
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Progress data (personal — don't commit, each user has their own)
+data/data_files/
+
+# Backup files
+data/*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
