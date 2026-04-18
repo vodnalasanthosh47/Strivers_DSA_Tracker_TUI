@@ -82,7 +82,7 @@ class StatsSidebar(Widget):
 
         # Build the big text block
         bar20 = _bar(done_count, total, 22)
-        daily_bar = _bar(today_count, daily_target, 18)
+        daily_bar = _bar(min(5, today_count), daily_target, 18)
         easy_bar = _diff_bar(easy_done, easy_total, 12)
         med_bar = _diff_bar(med_done, med_total, 12)
         hard_bar = _diff_bar(hard_done, hard_total, 12)
@@ -94,7 +94,7 @@ class StatsSidebar(Widget):
             f"[#484f58]  Keyboard-first progress\n[#484f58]  tracker [/]",
             "",
             f"[bold #8b949e]── DAILY TARGET ({today_str}) ──[/]",
-            f"  [#c9d1d9]{daily_bar}[/] [bold]{today_count}[/][#484f58]/{daily_target}[/]",
+            f"  [{"#c9d1d9" if today_count < 5 else "#1677D9"}]{daily_bar}[/] [bold #c9d1d9]{today_count}[/][#484f58]/{daily_target}[/]",
             f"  [#484f58]🔥 Streak:[/] [bold #d29922]{cur_streak}[/][#484f58]d  Best:[/] [bold #3fb950]{best_streak}[/][#484f58]d[/]",
             "",
             f"[bold #8b949e]── OVERALL PROGRESS ──[/]",
