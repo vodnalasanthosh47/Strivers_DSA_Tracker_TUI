@@ -174,17 +174,17 @@ class QuestionBrowser(Widget, can_focus=True):
                      if self.progress.get(q["id"], {}).get("status") == "done")
         total  = len(all_qs)
         chevron = "▼" if self._expanded.get(topic, True) else "▶"
-        n   = round((done / total) * 10) if total else 0
-        bar = "█" * n + "░" * (10 - n)
+        n   = round((done / total) * 20) if total else 0
+        bar = "█" * n + "░" * (20 - n)
         pct = f"{done/total*100:.0f}%" if total else "0%"
         bg  = " on #1c2128" if hl else " on #161b22"
 
         t = Text(no_wrap=True)
         t.append(f" {chevron} ", style=f"#484f58{bg}")
-        t.append(f"{topic.upper():<80}", style=f"bold #58a6ff{bg}")
+        t.append(f"{topic.upper():<70}", style=f"bold #58a6ff{bg}")
         t.append(f"{done:>2}/{total:<2}  ", style=f"#484f58{bg}")
         t.append(bar, style=f"#3fb950{bg}")
-        t.append(f" {pct:>4}", style=f"#8b949e{bg}")
+        t.append(f"   {pct:>4}", style=f"#8b949e{bg}")
         return t
 
     def _question_line(self, q: dict, hl: bool) -> Text:
