@@ -237,7 +237,7 @@
   { "id": "q_235", "title": "Kth Smallest Element", "topic": "Heaps", "difficulty": "Medium", "link": "https://www.geeksforgeeks.org/kth-smallest-largest-element-in-unsorted-array/", "platform": "GeeksforGeeks" },
   { "id": "q_236", "title": "Sort K Sorted Array", "topic": "Heaps", "difficulty": "Medium", "link": "https://www.geeksforgeeks.org/nearly-sorted-algorithm/", "platform": "GeeksforGeeks" },
   { "id": "q_237", "title": "Merge M Sorted Lists", "topic": "Heaps", "difficulty": "Hard", "link": "https://leetcode.com/problems/merge-k-sorted-lists/", "platform": "LeetCode" },
-  { "id": "q_238", "title": "Replace Elements by Rank", "topic": "Heaps", "difficulty": "Medium", "link": "https://www.geeksforgeeks.org/replace-each-element-by-its-rank-in-the-array/", "platform": "GeeksforGeeks" },
+  { "id": "q_238", "title": "Replace Elements by Rank", "topic": "Heaps", "difficulty": "Medium", "link": "https://www.geeksforgeeks.org/dsa/replace-each-element-of-array-with-its-corresponding-rank/", "platform": "GeeksforGeeks" },
   { "id": "q_239", "title": "Task Scheduler", "topic": "Heaps", "difficulty": "Medium", "link": "https://leetcode.com/problems/task-scheduler/", "platform": "LeetCode" },
   { "id": "q_240", "title": "Hands of Straights", "topic": "Heaps", "difficulty": "Medium", "link": "https://leetcode.com/problems/hand-of-straights/", "platform": "LeetCode" },
   { "id": "q_241", "title": "Design Twitter", "topic": "Heaps", "difficulty": "Medium", "link": "https://leetcode.com/problems/design-twitter/", "platform": "LeetCode" },
