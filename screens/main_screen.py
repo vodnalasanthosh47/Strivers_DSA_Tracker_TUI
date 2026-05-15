@@ -181,7 +181,8 @@ class QuestionBrowser(Widget, can_focus=True):
 
         t = Text(no_wrap=True)
         t.append(f" {chevron} ", style=f"#484f58{bg}")
-        t.append(f"{topic.upper():<70}", style=f"bold #58a6ff{bg}")
+        t.append(f"{topic.upper():<64}", style=f"bold #58a6ff{bg}")
+        t.append(f"[{(total-done):02d}]  ", style=f"bold red{bg}")
         t.append(f"{done:>2}/{total:<2}  ", style=f"#484f58{bg}")
         t.append(bar, style=f"#3fb950{bg}")
         t.append(f"   {pct:>4}", style=f"#8b949e{bg}")
