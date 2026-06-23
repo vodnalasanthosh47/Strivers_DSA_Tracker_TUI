@@ -317,6 +317,47 @@ class QuestionBrowser(Widget, can_focus=True):
                 return item[1]
         return None
 
+    def select_random_question(self) -> dict | None:
+        """Select a random topic and a random question from currently filtered questions,
+        expand the topic, set cursor to the question, and return it."""
+        import random
+        # 1. Filter questions exactly like _build_items
+        topic_qs: dict[str, list[dict]] = {}
+        for q in self.all_questions:
+            if self._revision_only and \
+               not self.progress.get(q["id"], {}).get("revision"):
+                continue
+            if self._todo_only and \
+               self.progress.get(q["id"], {}).get("status") == "done":
+                continue
+            if self._filter_diff != "All" and q["difficulty"] != self._filter_diff:
+                continue
+            if self._filter_search and \
+               self._filter_search not in q["title"].lower():
+                continue
+            topic_qs.setdefault(q["topic"], []).append(q)
+
+        if not topic_qs:
+            return None
+
+        # 2. Select a random topic, and then a random question from that topic
+        random_topic = random.choice(list(topic_qs.keys()))
+        random_question = random.choice(topic_qs[random_topic])
+
+        # 3. Expand the topic
+        self._expanded[random_topic] = True
+        self._build_items()
+
+        # 4. Find the selected question in self._items to position cursor
+        for idx, item in enumerate(self._items):
+            if item[0] == "question" and item[1]["id"] == random_question["id"]:
+                self._cursor = idx
+                self._scroll_cursor()
+                break
+
+        self.refresh()
+        return random_question
+
     def refresh_current(self) -> None:
         """Re-render after external changes (e.g. from detail modal)."""
         self.refresh()
@@ -337,6 +378,7 @@ class MainScreen(Screen):
         Binding("2",              "filter_medium",         "Medium",          show=False),
         Binding("3",              "filter_hard",           "Hard",            show=False),
         Binding("4",              "filter_todo",           "Todo",            show=False),
+        Binding("p",              "pick_random",           "Pick Random",     show=False),
         Binding("question_mark",  "show_help",             "Help",            show=False),
     ]
 
@@ -445,6 +487,14 @@ class MainScreen(Screen):
     def action_show_help(self) -> None:
         from screens.help_overlay import HelpOverlay
         self.app.push_screen(HelpOverlay())
+
+    def action_pick_random(self) -> None:
+        browser = self.query_one("#question-browser", QuestionBrowser)
+        q = browser.select_random_question()
+        if q:
+            self._open_detail(q)
+        else:
+            self.notify("No questions found matching active filters.", severity="warning")
 
 
     # ── Helpers ───────────────────────────────────────────────────

@@ -115,7 +115,8 @@ class StatsSidebar(Widget):
             f"[bold #8b949e]── QUICK KEYS ──[/]",
             f"  [#d29922]/[/] search  [#d29922]Space[/] toggle",
             f"  [#d29922]Enter[/] detail  [#d29922]r[/] revision",
-            f"  [#d29922]0-3[/] filter  [#d29922]?[/] help  [#d29922]q[/] quit",
+            f"  [#d29922]0-3[/] filter  [#d29922]p[/] random",
+            f"  [#d29922]?[/] help  [#d29922]q[/] quit",
         ]
 
         markup = "\n".join(lines)

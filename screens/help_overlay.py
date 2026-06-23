@@ -18,6 +18,7 @@ KEYBINDS = [
     ("F2 / r", "Toggle revision view"),
     ("1 / 2 / 3", "Filter Easy / Medium / Hard"),
     ("0", "Show all difficulties"),
+    ("p", "Pick random question"),
     ("o", "Open link in browser (detail)"),
     ("s", "Save & close (detail)"),
     ("t / d / r", "Set status in detail modal"),
